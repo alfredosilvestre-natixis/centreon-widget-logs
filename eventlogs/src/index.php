@@ -40,13 +40,8 @@ require_once $centreon_path . 'www/class/centreon.class.php';
 require_once $centreon_path . 'www/class/centreonSession.class.php';
 require_once $centreon_path . 'www/class/centreonDB.class.php';
 require_once $centreon_path . 'www/class/centreonWidget.class.php';
-require_once $centreon_path . 'www/class/centreonDuration.class.php';
 require_once $centreon_path . 'www/class/centreonUtils.class.php';
 require_once $centreon_path . 'www/class/centreonACL.class.php';
-require_once $centreon_path . 'www/class/centreonHost.class.php';
-
-require_once $centreon_path . 'www/class/centreonMedia.class.php';
-require_once $centreon_path . 'www/class/centreonCriticality.class.php';
 
 require_once $centreon_path ."GPL_LIB/Smarty/libs/Smarty.class.php";
 
@@ -63,10 +58,6 @@ if (CentreonSession::checkSession(session_id(), $db) == 0) {
 }
 $dbb = new CentreonDB("centstorage");
 
-/* Init Objects */
-$criticality = new CentreonCriticality($db);
-$media = new CentreonMedia($db);
-
 $path = $centreon_path . "www/widgets/eventlogs/src/";
 $template = new Smarty();
 $template = initSmartyTplForPopup($path, $template, "./", $centreon_path);
@@ -78,69 +69,16 @@ $page = $_REQUEST['page'];
 $widgetObj = new CentreonWidget($centreon, $db);
 $preferences = $widgetObj->getWidgetPreferences($widgetId);
 
-// Set Colors Table
-$res = $db->query("SELECT `key`, `value` FROM `options` WHERE `key` LIKE 'color%'");
-$stateSColors = array(0 => "#13EB3A",
-                     1 => "#F8C706",
-                     2 => "#F91D05",
-                     3 => "#DCDADA",
-                     4 => "#2AD1D4");
-$stateHColors = array(0 => "#13EB3A",
-                     1 => "#F91D05",
-                     2 => "#DCDADA",
-                     3 => "#2AD1D4");
-while ($row = $res->fetchRow()) {
-    if ($row['key'] == "color_ok") {
-        $stateSColors[0] = $row['value'];
-    } elseif ($row['key'] == "color_warning") {
-        $stateSColors[1] = $row['value'];
-    } elseif ($row['key'] == "color_critical") {
-        $stateSColors[2] = $row['value'];
-    } elseif ($row['key'] == "color_unknown") {
-        $stateSColors[3] = $row['value'];
-    } elseif ($row['key'] == "color_pending") {
-        $stateSColors[4] = $row['value'];
-    } elseif ($row['key'] == "color_up") {
-        $stateHColors[4] = $row['value'];
-    } elseif ($row['key'] == "color_down") {
-        $stateHColors[4] = $row['value'];
-    } elseif ($row['key'] == "color_unreachable") {
-        $stateHColors[4] = $row['value'];
-    }
-}
+// Get status colors
+$stateHColors = getStatusColors($db, 'host');
+$stateSColors = getStatusColors($db, 'service');
 
-$stateSLabels = array(0 => "Ok",
-                      1 => "Warning",
-                      2 => "Critical",
-                      3 => "Unknown",
-                      4 => "Pending");
-
-$stateHLabels = array(0 => "Up",
-                      1 => "Down",
-                      2 => "Unreachable",
-                      3 => "Pending");
-
-$typeLabels = array(0 => "SOFT",
-                    1 => "HARD");
-
-// Default colors
-$stateColors = getColors($db);
 // Get status labels
-$stateLabels = getLabels();
+$stateHLabels = getStatusLabels('host');
+$stateSLabels = getStatusLabels('service');
 
-$msg_type_set = array ();
-if (isset($preferences['alert']) && $preferences['alert'] == "1") {
-    array_push ($msg_type_set, "'0'");
-    array_push ($msg_type_set, "'1'");
-}
-if (isset($preferences['notification']) && $preferences['notification'] == "1") {
-    array_push ($msg_type_set, "'2'");
-    array_push ($msg_type_set, "'3'");
-}
-if (isset($preferences['error']) && $preferences['error'] == "1")
-    array_push ($msg_type_set, "'4'");
-
-$msg_req = '';
+// Get type labels
+$typeLabels = getTypeLabels();
 
 $host_msg_status_set = array();
 if (isset($preferences['host_up']) && $preferences['host_up'] == "1")
@@ -160,6 +98,7 @@ if (isset($preferences['service_critical']) && $preferences['service_critical'] 
 if (isset($preferences['service_unknown']) && $preferences['service_unknown'] == "1")
     array_push($svc_msg_status_set, "'3'");
 
+$msg_req = '';
 $flag_begin = 0;
 if (isset($preferences['notification']) && $preferences['notification'] == "1") {
     if (count($host_msg_status_set)) {
