@@ -163,6 +163,9 @@ if ($flag_begin) {
     $msg_req = " AND (".$msg_req.") ";
 }
 
+// Remove virtual hosts and services
+$msg_req .= " AND host_name NOT LIKE '%_Module_%'";
+
 // Search on object name
 if (isset($preferences['object_name_search']) && $preferences['object_name_search'] != "") {
     $tab = split(" ", $preferences['object_name_search']);

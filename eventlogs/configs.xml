@@ -12,6 +12,7 @@
     <autoRefresh>10</autoRefresh>
     <preferences>
         <preference label="Object Name Search" name="object_name_search" defaultValue="" type="compare" header="Filters"/>
+        <preference label="Output Search" name="output_search" defaultValue="" type="compare"/>
         <preference label="Display Error" name="error" defaultValue="1" type="boolean"/>
         <preference label="Display Alert" name="alert" defaultValue="1" type="boolean"/>
         <preference label="Display Notification" name="notification" defaultValue="1" type="boolean"/>
