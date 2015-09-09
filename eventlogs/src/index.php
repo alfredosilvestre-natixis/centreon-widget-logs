@@ -177,6 +177,18 @@ if (isset($preferences['object_name_search']) && $preferences['object_name_searc
     }
 }
 
+// Search on output
+if (isset($preferences['output_search']) && $preferences['output_search'] != "") {
+    $tab = split(" ", $preferences['output_search']);
+    $op = $tab[0];
+    if (isset($tab[1])) {
+        $outputSearch = $tab[1];
+    }
+    if ($op && isset($outputSearch) && $outputSearch != "") {
+        $msg_req .= " AND output ".CentreonUtils::operandToMysqlFormat($op)." '".$dbb->escape($outputSearch)."' ";
+    }
+}
+
 // Build final request
 $start = time() - $preferences['log_period'];
 $end = time();
@@ -191,7 +203,7 @@ $outputLength = $preferences['output_length'] ? $preferences['output_length'] : 
 if (!$centreon->user->admin) {
     $pearDB = $db;
     $aclObj = new CentreonACL($centreon->user->get_id(), $centreon->user->get_admin());
-    $lca = array("LcaHost" => $aclObj->getHostServices($dbb, null, 1), "LcaHostGroup" => $aclObj->getHostGroups(), "LcaSG" => $aclObj->getServiceGroups());
+    $lca = array("LcaHost" => $aclObj->getHostServices($dbb, null, 1));
 }
 
 while ($row = $res->fetchRow()) {
