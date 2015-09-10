@@ -58,7 +58,7 @@ if (CentreonSession::checkSession(session_id(), $db) == 0) {
 }
 $dbb = new CentreonDB("centstorage");
 
-$path = $centreon_path . "www/widgets/eventlogs/src/";
+$path = $centreon_path . "www/widgets/logs/src/";
 $template = new Smarty();
 $template = initSmartyTplForPopup($path, $template, "./", $centreon_path);
 
