@@ -100,6 +100,8 @@ if (isset($preferences['service_unknown']) && $preferences['service_unknown'] ==
 
 $msg_req = '';
 $flag_begin = 0;
+
+// Display notification
 if (isset($preferences['notification']) && $preferences['notification'] == "1") {
     if (count($host_msg_status_set)) {
         $flag_begin = 1;
@@ -118,31 +120,42 @@ if (isset($preferences['notification']) && $preferences['notification'] == "1") 
         $flag_begin = 1;
     }
 }
+
+// Display alert
 if (isset($preferences['alert']) && $preferences['alert'] == "1") {
     if (count($host_msg_status_set)) {
         if ($flag_begin) {
             $msg_req .= " OR ";
         }
         $flag_begin = 1;
-        $msg_req .= " (`msg_type` IN ('1', '10', '11') AND `status` IN (" . implode(',', $host_msg_status_set).")) ";
+        $msg_req .= " ((`msg_type` IN ('1', '10', '11') AND `status` IN (" . implode(',', $host_msg_status_set).")) ";
+        if ($preferences['state_type_filter'] == "hardonly") {
+            $flag_begin = 1;
+            $msg_req .= " AND `type` = '1' ";
+        } else if ($preferences['state_type_filter'] == "softonly") {
+            $flag_begin = 1;
+            $msg_req .= " AND `type` = '0' ";
+        }
+        $msg_req .= ") ";
     }
     if (count($svc_msg_status_set)) {
         if ($flag_begin) {
             $msg_req .= " OR ";
         }
         $flag_begin = 1;
-        $msg_req .= " ((`msg_type` IN ('0', '10', '11') ";
-        $msg_req .= " AND `status` IN (" . implode(',', $svc_msg_status_set).")) ";
+        $msg_req .= " ((`msg_type` IN ('0', '10', '11') AND `status` IN (" . implode(',', $svc_msg_status_set).")) ";
+        if ($preferences['state_type_filter'] == "hardonly") {
+            $flag_begin = 1;
+            $msg_req .= " AND `type` = '1' ";
+        } else if ($preferences['state_type_filter'] == "softonly") {
+            $flag_begin = 1;
+            $msg_req .= " AND `type` = '0' ";
+        }
         $msg_req .= ") ";
     }
-    if ($preferences['state_type_filter'] == "hardonly") {
-        $flag_begin = 1;
-        $msg_req .= " AND `type` = '1' ";
-    } else if ($preferences['state_type_filter'] == "softonly") {
-        $flag_begin = 1;
-        $msg_req .= " AND `type` = '0' ";
-    }
 }
+
+// Display error
 if (isset($preferences['error']) && $preferences['error'] == "1") {
     if ($flag_begin == 0) {
         $msg_req .= " AND ";
@@ -151,6 +164,8 @@ if (isset($preferences['error']) && $preferences['error'] == "1") {
     }
     $msg_req .= " (`msg_type` IN ('4') AND `status` IS NULL) ";
 }
+
+// Display info
 if (isset($preferences['info']) && $preferences['info'] == "1") {
     if ($flag_begin == 0) {
         $msg_req .= " AND ";
@@ -159,6 +174,7 @@ if (isset($preferences['info']) && $preferences['info'] == "1") {
     }
     $msg_req .= " (`msg_type` IN ('5'))";
 }
+
 if ($flag_begin) {
     $msg_req = " AND (".$msg_req.") ";
 }
