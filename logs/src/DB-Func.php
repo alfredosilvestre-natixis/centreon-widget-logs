@@ -44,7 +44,7 @@ function getStatusColors($db, $object = 'host') {
         4 => "#2AD1D4"
     );
     $statusINColors = array(
-        -1 => "#BA55D3",
+        -1 => "#00bfb3",
     );
 
     $res = $db->query("SELECT `key`, `value` FROM `options` WHERE `key` LIKE 'color%'");
