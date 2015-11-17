@@ -68,23 +68,16 @@ try {
 }
 ?>
 <html>
-    <style type="text/css">
-         body{ margin:0; padding:100px 0 0 0; }
-         div#actionBar { position:absolute; top:0; left:0; width:100%; height:25px; background-color: #FFFFFF; }
-         @media screen { body>div#actionBar { position: fixed; } }
-         * html body { overflow:hidden; }
-         * html div#eventLogsTable { height:100%; overflow:auto; }
-    </style>
     <head>
     	<title>Host Monitoring</title>
-    	<link href="../../Themes/Centreon-2/style.css" rel="stylesheet" type="text/css"/>
-    	<link href="../../Themes/Centreon-2/jquery-ui/jquery-ui.css" rel="stylesheet" type="text/css"/>
-    	<link href="../../Themes/Centreon-2/jquery-ui/jquery-ui-centreon.css" rel="stylesheet" type="text/css"/>
-    	<link href="../../include/common/javascript/jquery/plugins/pagination/pagination.css" rel="stylesheet" type="text/css"/>
-    	<script type="text/javascript" src="../../include/common/javascript/jquery/jquery.js"></script>
+	<link href="<?php echo '../../Themes/Centreon-2/Color/blue_css.php';?>" rel="stylesheet" type="text/css"/>
+        <link href="../../Themes/Centreon-2/style.css" type="text/css" rel="styleheet"/>    	
+       <script type="text/javascript" src="../../include/common/javascript/jquery/jquery.js"></script>
     	<script type="text/javascript" src="../../include/common/javascript/jquery/jquery-ui.js"></script>
-    	<script type="text/javascript" src="../../include/common/javascript/jquery/plugins/pagination/jquery.pagination.js"></script>
     	<script type="text/javascript" src="../../include/common/javascript/widgetUtils.js"></script>
+	   <style type="text/css">
+	   .ListTable{font-size:11px;border-color: #BFD0E2;}
+	   </style>
     </head>
     <body>
     <div id='actionBar' style='width:100%;'>

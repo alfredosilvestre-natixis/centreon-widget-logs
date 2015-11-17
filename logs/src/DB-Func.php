@@ -43,6 +43,9 @@ function getStatusColors($db, $object = 'host') {
         3 => "#DCDADA",
         4 => "#2AD1D4"
     );
+    $statusINColors = array(
+        -1 => "#BA55D3",
+    );
 
     $res = $db->query("SELECT `key`, `value` FROM `options` WHERE `key` LIKE 'color%'");
     while ($row = $res->fetchRow()) {
@@ -70,6 +73,8 @@ function getStatusColors($db, $object = 'host') {
         $statusColors = $statusHColors;
     } elseif ($object == 'service') {
         $statusColors = $statusSColors;
+    } elseif ($object == 'info') {
+        $statusColors = $statusINColors;
     }
 
     return $statusColors;

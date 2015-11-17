@@ -1,32 +1,43 @@
+<style type="text/css">
+{literal}
+	@import url('../../Themes/Centreon-2/style.css');
+{/literal}
+</style>
 <form>
-    <table id='eventLogsTable' class='styleTable'>
-        <tr>
-            {if $preferences.display_date}<th class='ui-state-default' name='date'>Date</th>{/if}
-            {if $preferences.display_object_name}<th class='ui-state-default' name='name' colspan='2'>Object name</th>{/if}
-            {if $preferences.display_status}<th class='ui-state-default' name='state'>Status</th>{/if}
-            {if $preferences.display_type}<th class='ui-state-default' name='type'>Type</th>{/if}
-            {if $preferences.display_tries}<th class='ui-state-default' name='check_attempt'>Attempt</th>{/if}
-            {if $preferences.display_output}<th class='ui-state-default' name='output'>Output</th>{/if}
-            {if $preferences.display_contact}<th class='ui-state-default' name='command'>Contact</th>{/if}
-            {if $preferences.display_command}<th class='ui-state-default' name='contact'>Command</th>{/if}
+    <table class='StyleTable ListTable'>
+        <tr class="ListHeader">
+            {if $preferences.display_date}<td class='ListColHeaderCenter'>Date</td>{/if}
+            {if $preferences.display_object_name}<td class='ListColHeaderCenter'>Object name</td>{/if}
+            {if $preferences.display_status}<td class='ListColHeaderCenter'>Status</td>{/if}
+            {if $preferences.display_type}<td class='ListColHeaderCenter'>Type</td>{/if}
+            {if $preferences.display_tries}<td class='ListColHeaderCenter'>Attempt</td>{/if}
+            {if $preferences.display_output}<td class='ListColHeaderLeft'>Output</td>{/if}
+            {if $preferences.display_contact}<td class='ListColHeaderCenter'>Contact</td>{/if}
+            {if $preferences.display_command}<td class='ListColHeaderCenter'>Command</td>{/if}
         </tr>
+	{assign var='classStyle' value='list_two'} 
         {foreach item=elem from=$data}
-        <tr>
-            {if $preferences.display_date}<td class='ui-widget-content' style='text-align:center;'>{$elem.ctime}</td>{/if}
+	{if $classStyle == 'list_two'}
+	    {assign var='classStyle' value='list_one'}
+	{else}
+		{assign var='classStyle' value='list_two'}
+	{/if}
+        <tr class='{$classStyle}'>
+            {if $preferences.display_date}<td class='ListColCenter'>{$elem.ctime}</td>{/if}
             {if $preferences.display_object_name}
-            <td class='ui-widget-content' style='text-align:center;'>
-                {$elem.object_name1}
-            </td>
-            <td class='ui-widget-content' style='text-align:center;'>
-                {$elem.object_name2}
+            <td class='ListColCenter'>
+	    <a href="/centreon/main.php?p=20202&o=hd&host_name={$elem.object_name1}" target="_blank">{$elem.object_name1}</a>
+		{if $elem.object_name2 != NULL} / 
+		<a href="/centreon/main.php?p=20201&o=svcd&host_name={$elem.object_name1}&service_description={$elem.object_name2}" target="_blank">{$elem.object_name2}</a> 
+		{/if}
             </td>
             {/if}
-            {if $preferences.display_status}<td class='ui-widget-content' style='text-align:center;'><div style='background-color:{$elem.color};font-weight:bold;padding:0px;margin:0px;'>{$elem.status}</div></td>{/if}
-            {if $preferences.display_type}<td class='ui-widget-content' style='text-align:center;'>{$elem.type}</td>{/if}
-            {if $preferences.display_tries}<td class='ui-widget-content' style='text-align:center;'>{$elem.retry}</td>{/if}
-            {if $preferences.display_output}<td class='ui-widget-content'>{$elem.output}</td>{/if}
-            {if $preferences.display_contact}<td class='ui-widget-content'>{$elem.notification_contact}</td>{/if}
-            {if $preferences.display_command}<td class='ui-widget-content'>{$elem.notification_cmd}</td>{/if}
+            {if $preferences.display_status}<td class='ListColCenter'><span style='background-color:{$elem.color};font-weight:bold;' class="badge">{$elem.status}</span></td>{/if}
+            {if $preferences.display_type}<td class='ListColCenter'>{$elem.type}</td>{/if}
+            {if $preferences.display_tries}<td class='ListColCenter'>{$elem.retry}</td>{/if}
+            {if $preferences.display_output}<td class='ListColLeft'>{$elem.output}</td>{/if}
+            {if $preferences.display_contact}<td class='ListColCenter'>{$elem.notification_contact}</td>{/if}
+            {if $preferences.display_command}<td class='ListColCenter'>{$elem.notification_cmd}</td>{/if}
 	</tr>
         {/foreach}
     </table>

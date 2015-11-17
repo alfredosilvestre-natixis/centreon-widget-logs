@@ -72,6 +72,7 @@ $preferences = $widgetObj->getWidgetPreferences($widgetId);
 // Get status colors
 $stateHColors = getStatusColors($db, 'host');
 $stateSColors = getStatusColors($db, 'service');
+$stateINColors = getStatusColors($db, 'info');
 
 // Get status labels
 $stateHLabels = getStatusLabels('host');
@@ -209,6 +210,11 @@ if (isset($preferences['output_search']) && $preferences['output_search'] != "")
 }
 
 // Build final request
+$orderby = "name ASC";
+if (isset($preferences['order_by']) && $preferences['order_by'] != "") {
+  $orderby = $preferences['order_by'];
+}
+
 $start = time() - $preferences['log_period'];
 $end = time();
 $query = "SELECT SQL_CALC_FOUND_ROWS * FROM logs WHERE ctime > '$start' AND ctime <= '$end' $msg_req";
@@ -264,7 +270,8 @@ while ($row = $res->fetchRow()) {
                 $data[$row['log_id']]['color'] = $stateHColors[$value];
                 $value = $stateHLabels[$value];
             } else {
-                $value = "Info";
+	        $data[$row['log_id']]['color'] = $stateINColors[$value];
+		$value = "Info";
             }
         } elseif ($key == "output") {
             $value = substr($value, 0, $outputLength);
@@ -291,11 +298,12 @@ $template->display('index.ihtml');
 <script type="text/javascript">
     var nbRows = <?php echo $nbRows;?>;
     var currentPage = <?php echo $page;?>;
-    var orderby = '<?php echo $orderby;?>';
+    var orderby = '<?php echo $orderby;?>;'
     var nbCurrentItems = <?php echo count($data);?>;
 
+
     $(function () {
-        $("#eventLogsTable").styleTable();
+       $("#eventLogsTable").styleTable();
         if (nbRows > itemsPerPage) {
             $("#pagination").pagination(nbRows, {
                 items_per_page: itemsPerPage,
