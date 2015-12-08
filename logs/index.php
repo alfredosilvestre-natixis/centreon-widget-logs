@@ -33,11 +33,20 @@
  *
  */
 
+
 require_once "../require.php";
 require_once $centreon_path . 'www/class/centreon.class.php';
 require_once $centreon_path . 'www/class/centreonSession.class.php';
 require_once $centreon_path . 'www/class/centreonDB.class.php';
 require_once $centreon_path . 'www/class/centreonWidget.class.php';
+require_once "/etc/centreon/centreon.conf.php";
+require_once $centreon_path . 'www/class/centreonDuration.class.php';
+require_once $centreon_path . 'www/class/centreonUtils.class.php';
+require_once $centreon_path . 'www/class/centreonACL.class.php';
+require_once $centreon_path . 'www/class/centreonHost.class.php';
+
+//load smarty
+require_once $centreon_path . 'GPL_LIB/Smarty/libs/Smarty.class.php';
 
 session_start();
 if (!isset($_SESSION['centreon']) || !isset($_REQUEST['widgetId'])) {
@@ -47,15 +56,20 @@ $centreon = $_SESSION['centreon'];
 $widgetId = $_REQUEST['widgetId'];
 
 try {
-    $db = new CentreonDB();
-    $widgetObj = new CentreonWidget($centreon, $db);
+    global $pearDB;
+
+    $db_centreon = new CentreonDB();
+    $db = new CentreonDB("centstorage");
+    $pearDB = $db_centreon;
+
+    $widgetObj = new CentreonWidget($centreon, $db_centreon);
     $preferences = $widgetObj->getWidgetPreferences($widgetId);
     $autoRefresh = 0;
     if (isset($preferences['refresh_interval'])) {
         $autoRefresh = $preferences['refresh_interval'];
     }
     $broker = "broker";
-    $res = $db->query("SELECT `value` FROM `options` WHERE `key` = 'broker'");
+    $res = $db_centreon->query("SELECT `value` FROM `options` WHERE `key` = 'broker'");
     if ($res->numRows()) {
         $row = $res->fetchRow();
         $broker = strtolower($row['value']);
@@ -66,60 +80,19 @@ try {
     echo $e->getMessage() . "<br/>";
     exit;
 }
-?>
-<html>
-    <head>
-    	<title>Host Monitoring</title>
-	<link href="<?php echo '../../Themes/Centreon-2/Color/blue_css.php';?>" rel="stylesheet" type="text/css"/>
-        <link href="../../Themes/Centreon-2/style.css" type="text/css" rel="styleheet"/>    	
-       <script type="text/javascript" src="../../include/common/javascript/jquery/jquery.js"></script>
-    	<script type="text/javascript" src="../../include/common/javascript/jquery/jquery-ui.js"></script>
-    	<script type="text/javascript" src="../../include/common/javascript/widgetUtils.js"></script>
-	   <style type="text/css">
-	   .ListTable{font-size:11px;border-color: #BFD0E2;}
-	   </style>
-    </head>
-    <body>
-    <div id='actionBar' style='width:100%;'>
-	<span id='toolBar' style='float:left;width:30%;'></span>
-	<span id='pagination' class='pagination' style='float:left;width:45%;text-align:center;'> </span>
-        <span id='nbRows' style='float:left;width:24%;text-align:right;font-weight:bold;'></span>
-    </div><br/><br/>
-        <div id='eventLogsTable'></div>
-    </body>
-<script type="text/javascript">
-var widgetId = <?php echo $widgetId; ?>;
-var autoRefresh = <?php echo $autoRefresh;?>;
-var timeout;
-var itemsPerPage = <?php echo $preferences['entries'];?>;
-var pageNumber = 0;
-var clickedCb = new Array();
-var broker = '<?php echo $broker;?>';
 
-jQuery(function() {
-    loadPage();
-});
-
-/**
- * Load Page
- */
-function loadPage() {
-    var indexPage = "index";
-    jQuery.ajax("./src/"+indexPage+".php?widgetId="+widgetId+"&page="+pageNumber, {        
-        success : function(htmlData) {
-            jQuery("#eventLogsTable").html("");
-            jQuery("#eventLogsTable").html(htmlData);
-            var h = document.getElementById("eventLogsTable").scrollHeight + 30;
-            parent.iResize(window.name, h);
-        }
-    });
-    if (autoRefresh) {
-        if (timeout) {
-            clearTimeout(timeout);
-        }
-        timeout = setTimeout(loadPage, (autoRefresh * 1000));
-    }
+if ($centreon->user->admin == 0) {
+  $access = new CentreonACL($centreon->user->get_id());
+  $grouplist = $access->getAccessGroups();
+  $grouplistStr = $access->getAccessGroupsString();
 }
 
-</script>
-</html>
+$path = $centreon_path . "www/widgets/logs/";
+$template = new Smarty();
+$template = initSmartyTplForPopup($path, $template, "./", $centreon_path);
+
+$template->assign('widgetId', $widgetId);
+$template->assign('preferences', $preferences);
+$template->assign('autoRefresh', $autoRefresh);
+$template->assign('broker', $broker);
+$template->display('table.ihtml');

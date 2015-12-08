@@ -35,7 +35,6 @@
 
 require_once "../../require.php";
 require_once "./DB-Func.php";
-
 require_once $centreon_path . 'www/class/centreon.class.php';
 require_once $centreon_path . 'www/class/centreonSession.class.php';
 require_once $centreon_path . 'www/class/centreonDB.class.php';
@@ -46,9 +45,11 @@ require_once $centreon_path . 'www/class/centreonACL.class.php';
 require_once $centreon_path ."GPL_LIB/Smarty/libs/Smarty.class.php";
 
 session_start();
-if (!isset($_SESSION['centreon']) || !isset($_REQUEST['widgetId']) || !isset($_REQUEST['page'])) {
-    exit;
+
+if ( !isset($_SESSION['centreon'])  ||  !isset($_REQUEST['widgetId'])   ||  !isset($_REQUEST['page'] )) {
+  exit;
 }
+
 
 $centreon = $_SESSION['centreon'];
 
@@ -289,52 +290,18 @@ while ($row = $res->fetchRow()) {
         $data[$row['log_id']][$key] = $value;
     }
 }
+
+
+$template->assign('widgetId', $widgetId);
+$template->assign('autoRefresh', $autoRefresh);
+$template->assign('preferences', $preferences);
+$template->assign('nbRows', $nbRows);
+$template->assign('page', $page);
+$template->assign('orderby', $orderby);
+$template->assign('dataJS', count($data));
 $template->assign('centreon_web_path', trim($centreon->optGen['oreon_web_path'], "/"));
 $template->assign('preferences', $preferences);
 $template->assign('data', $data);
 $template->display('index.ihtml');
 
 ?>
-<script type="text/javascript">
-    var nbRows = <?php echo $nbRows;?>;
-    var currentPage = <?php echo $page;?>;
-    var orderby = '<?php echo $orderby;?>;'
-    var nbCurrentItems = <?php echo count($data);?>;
-
-
-    $(function () {
-       $("#eventLogsTable").styleTable();
-        if (nbRows > itemsPerPage) {
-            $("#pagination").pagination(nbRows, {
-                items_per_page: itemsPerPage,
-                current_page: pageNumber,
-                callback: paginationCallback
-            }).append("<br/>");
-        }
-
-        $("#nbRows").html(nbCurrentItems+"/"+nbRows);
-
-        $(".selection").each(function() {
-            var curId = $(this).attr('id');
-            if (typeof(clickedCb[curId]) != 'undefined') {
-                this.checked = clickedCb[curId];
-            }
-        });
-
-        var tmp = orderby.split(' ');
-        var icn = 'n';
-        if (tmp[1] == "DESC") {
-            icn = 's';
-        }
-        $("[name="+tmp[0]+"]").append('<span style="position: relative; float: right;" class="ui-icon ui-icon-triangle-1-'+icn+'"></span>');
-    });
-
-    function paginationCallback(page_index, jq)
-    {
-        if (page_index != pageNumber) {
-            pageNumber = page_index;
-            clickedCb = new Array();
-            loadPage();
-        }
-    }
-</script>
