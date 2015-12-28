@@ -12,11 +12,10 @@
 	   {/literal}
 </head>
 <body>
-	<div id='actionBar' style='width:100%;'>
-        <span id='toolBar' style='float:left;width:30%;'></span>
-        <span id='pagination' class='pagination' style='float:left;width:45%;text-align:center;'> </span>
-        <span id='nbRows' style='float:left;width:24%;text-align:right;font-weight:bold;'></span>
-    </div><br/><br/>
+    <div id='actionBar' style='width:100%; float:left;'>
+        <div id='toolBar' style='float:left;'></div>
+        <div id='pagination' style='float:left;text-align:right;margin:12px 0px 10px 12px;'></div>
+    </div>
         <div id='eventLogsTable'></div>
     <table class='StyleTable ListTable'>
         <tr class="ListHeader">
