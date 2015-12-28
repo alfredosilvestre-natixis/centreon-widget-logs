@@ -79,6 +79,11 @@ $stateINColors = getStatusColors($db, 'info');
 $stateHLabels = getStatusLabels('host');
 $stateSLabels = getStatusLabels('service');
 
+$autoRefresh = 0;
+if (isset($preferences['refresh_interval'])) {
+    $autoRefresh = $preferences['refresh_interval'];
+}
+
 // Get type labels
 $typeLabels = getTypeLabels();
 
