@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * Copyright 2005-2011 MERETHIS
  * Centreon is developped by : Julien Mathis and Romain Le Merlus under
  * GPL Licence 2.0.
@@ -78,11 +78,6 @@ $stateINColors = getStatusColors($db, 'info');
 // Get status labels
 $stateHLabels = getStatusLabels('host');
 $stateSLabels = getStatusLabels('service');
-
-$autoRefresh = 0;
-if (isset($preferences['refresh_interval'])) {
-    $autoRefresh = $preferences['refresh_interval'];
-}
 
 // Get type labels
 $typeLabels = getTypeLabels();
@@ -276,8 +271,8 @@ while ($row = $res->fetchRow()) {
                 $data[$row['log_id']]['color'] = $stateHColors[$value];
                 $value = $stateHLabels[$value];
             } else {
-	        $data[$row['log_id']]['color'] = $stateINColors[$value];
-		$value = "Info";
+	            $data[$row['log_id']]['color'] = $stateINColors[$value];
+		        $value = "Info";
             }
         } elseif ($key == "output") {
             $value = substr($value, 0, $outputLength);
@@ -296,17 +291,17 @@ while ($row = $res->fetchRow()) {
     }
 }
 
-
 $template->assign('widgetId', $widgetId);
 $template->assign('autoRefresh', $autoRefresh);
 $template->assign('preferences', $preferences);
 $template->assign('nbRows', $nbRows);
+$template->assign('nblines', ($preferences['entries'] > $nbRows ? $nbRows : $preferences['entries']));
 $template->assign('page', $page);
 $template->assign('orderby', $orderby);
 $template->assign('dataJS', count($data));
 $template->assign('centreon_web_path', trim($centreon->optGen['oreon_web_path'], "/"));
 $template->assign('preferences', $preferences);
 $template->assign('data', $data);
-$template->display('index.ihtml');
 
-?>
+/* Display Widget */
+$template->display('index.ihtml');
