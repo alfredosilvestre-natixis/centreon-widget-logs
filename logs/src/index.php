@@ -82,6 +82,11 @@ $stateSLabels = getStatusLabels('service');
 // Get type labels
 $typeLabels = getTypeLabels();
 
+$autoRefresh = 0;
+if (isset($preferences['refresh_interval'])) {
+    $autoRefresh = $preferences['refresh_interval'];
+}
+
 $host_msg_status_set = array();
 if (isset($preferences['host_up']) && $preferences['host_up'] == "1")
     array_push($host_msg_status_set, "'0'");
