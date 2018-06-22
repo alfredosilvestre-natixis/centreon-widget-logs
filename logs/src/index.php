@@ -35,29 +35,29 @@
 
 require_once "../../require.php";
 require_once "./DB-Func.php";
+require_once $centreon_path . 'bootstrap.php';
 require_once $centreon_path . 'www/class/centreon.class.php';
 require_once $centreon_path . 'www/class/centreonSession.class.php';
-require_once $centreon_path . 'www/class/centreonDB.class.php';
 require_once $centreon_path . 'www/class/centreonWidget.class.php';
 require_once $centreon_path . 'www/class/centreonUtils.class.php';
 require_once $centreon_path . 'www/class/centreonACL.class.php';
 
-require_once $centreon_path ."GPL_LIB/Smarty/libs/Smarty.class.php";
+require_once $centreon_path . "GPL_LIB/Smarty/libs/Smarty.class.php";
 
 session_start();
 
-if ( !isset($_SESSION['centreon'])  ||  !isset($_REQUEST['widgetId'])   ||  !isset($_REQUEST['page'] )) {
-  exit;
+if (!isset($_SESSION['centreon']) || !isset($_REQUEST['widgetId']) || !isset($_REQUEST['page'])) {
+    exit;
 }
 
 
 $centreon = $_SESSION['centreon'];
 
-$db = new CentreonDB();
+$db = $dependencyInjector['configuration_db'];
 if (CentreonSession::checkSession(session_id(), $db) == 0) {
     exit;
 }
-$dbb = new CentreonDB("centstorage");
+$dbb = $dependencyInjector['realtime_db'];
 
 $path = $centreon_path . "www/widgets/logs/src/";
 $template = new Smarty();
@@ -88,22 +88,29 @@ if (isset($preferences['refresh_interval'])) {
 }
 
 $host_msg_status_set = array();
-if (isset($preferences['host_up']) && $preferences['host_up'] == "1")
+if (isset($preferences['host_up']) && $preferences['host_up'] == "1") {
     array_push($host_msg_status_set, "'0'");
-if (isset($preferences['host_down']) && $preferences['host_down'] == "1")
+}
+if (isset($preferences['host_down']) && $preferences['host_down'] == "1") {
     array_push($host_msg_status_set, "'1'");
-if (isset($preferences['host_unreachable']) && $preferences['host_unreachable'] == "1")
+}
+if (isset($preferences['host_unreachable']) && $preferences['host_unreachable'] == "1") {
     array_push($host_msg_status_set, "'2'");
+}
 
 $svc_msg_status_set = array();
-if (isset($preferences['service_ok']) && $preferences['service_ok'] == "1")
+if (isset($preferences['service_ok']) && $preferences['service_ok'] == "1") {
     array_push($svc_msg_status_set, "'0'");
-if (isset($preferences['service_warning']) && $preferences['service_warning'] == "1")
+}
+if (isset($preferences['service_warning']) && $preferences['service_warning'] == "1") {
     array_push($svc_msg_status_set, "'1'");
-if (isset($preferences['service_critical']) && $preferences['service_critical'] == "1")
+}
+if (isset($preferences['service_critical']) && $preferences['service_critical'] == "1") {
     array_push($svc_msg_status_set, "'2'");
-if (isset($preferences['service_unknown']) && $preferences['service_unknown'] == "1")
+}
+if (isset($preferences['service_unknown']) && $preferences['service_unknown'] == "1") {
     array_push($svc_msg_status_set, "'3'");
+}
 
 $msg_req = '';
 $flag_begin = 0;
@@ -112,7 +119,7 @@ $flag_begin = 0;
 if (isset($preferences['notification']) && $preferences['notification'] == "1") {
     if (count($host_msg_status_set)) {
         $flag_begin = 1;
-        $msg_req .= " (`msg_type` = '3' AND `status` IN (" . implode(',', $host_msg_status_set)."))";
+        $msg_req .= " (`msg_type` = '3' AND `status` IN (" . implode(',', $host_msg_status_set) . "))";
     }
     if (count($svc_msg_status_set)) {
         if ($flag_begin) {
@@ -120,7 +127,7 @@ if (isset($preferences['notification']) && $preferences['notification'] == "1") 
         } else {
             $msg_req .= "(";
         }
-        $msg_req .= " (`msg_type` = '2' AND `status` IN (" . implode(',', $svc_msg_status_set)."))";
+        $msg_req .= " (`msg_type` = '2' AND `status` IN (" . implode(',', $svc_msg_status_set) . "))";
         if (!$flag_begin) {
             $msg_req .= ") ";
         }
@@ -135,7 +142,7 @@ if (isset($preferences['alert']) && $preferences['alert'] == "1") {
             $msg_req .= " OR ";
         }
         $flag_begin = 1;
-        $msg_req .= " ((`msg_type` IN ('1', '10', '11') AND `status` IN (" . implode(',', $host_msg_status_set).")) ";
+        $msg_req .= " ((`msg_type` IN ('1', '10', '11') AND `status` IN (" . implode(',', $host_msg_status_set) . ")) ";
         if ($preferences['state_type_filter'] == "hardonly") {
             $flag_begin = 1;
             $msg_req .= " AND `type` = '1' ";
@@ -150,7 +157,7 @@ if (isset($preferences['alert']) && $preferences['alert'] == "1") {
             $msg_req .= " OR ";
         }
         $flag_begin = 1;
-        $msg_req .= " ((`msg_type` IN ('0', '10', '11') AND `status` IN (" . implode(',', $svc_msg_status_set).")) ";
+        $msg_req .= " ((`msg_type` IN ('0', '10', '11') AND `status` IN (" . implode(',', $svc_msg_status_set) . ")) ";
         if ($preferences['state_type_filter'] == "hardonly") {
             $flag_begin = 1;
             $msg_req .= " AND `type` = '1' ";
@@ -183,7 +190,7 @@ if (isset($preferences['info']) && $preferences['info'] == "1") {
 }
 
 if ($flag_begin) {
-    $msg_req = " AND (".$msg_req.") ";
+    $msg_req = " AND (" . $msg_req . ") ";
 }
 
 // Remove virtual hosts and services
@@ -197,9 +204,9 @@ if (isset($preferences['object_name_search']) && $preferences['object_name_searc
         $search = $tab[1];
     }
     if ($op && isset($search) && $search != "") {
-        $msg_req .= " AND (host_name ".CentreonUtils::operandToMysqlFormat($op)." '".$dbb->escape($search)."' ";
-        $msg_req .= " OR service_description ".CentreonUtils::operandToMysqlFormat($op)." '".$dbb->escape($search)."' ";
-        $msg_req .= " OR instance_name ".CentreonUtils::operandToMysqlFormat($op)." '".$dbb->escape($search)."') ";
+        $msg_req .= " AND (host_name " . CentreonUtils::operandToMysqlFormat($op) . " '" . $dbb->escape($search) . "' ";
+        $msg_req .= " OR service_description " . CentreonUtils::operandToMysqlFormat($op) . " '" . $dbb->escape($search) . "' ";
+        $msg_req .= " OR instance_name " . CentreonUtils::operandToMysqlFormat($op) . " '" . $dbb->escape($search) . "') ";
     }
 }
 
@@ -211,23 +218,23 @@ if (isset($preferences['output_search']) && $preferences['output_search'] != "")
         $outputSearch = $tab[1];
     }
     if ($op && isset($outputSearch) && $outputSearch != "") {
-        $msg_req .= " AND output ".CentreonUtils::operandToMysqlFormat($op)." '".$dbb->escape($outputSearch)."' ";
+        $msg_req .= " AND output " . CentreonUtils::operandToMysqlFormat($op) . " '" . $dbb->escape($outputSearch) . "' ";
     }
 }
 
 // Build final request
 $orderby = "name ASC";
 if (isset($preferences['order_by']) && $preferences['order_by'] != "") {
-  $orderby = $preferences['order_by'];
+    $orderby = $preferences['order_by'];
 }
 
 $start = time() - $preferences['log_period'];
 $end = time();
 $query = "SELECT SQL_CALC_FOUND_ROWS * FROM logs WHERE ctime > '$start' AND ctime <= '$end' $msg_req";
 $query .= " ORDER BY ctime DESC, host_name ASC, log_id DESC, service_description ASC";
-$query .= " LIMIT ".($page * $preferences['entries']).",".$preferences['entries'];
+$query .= " LIMIT " . ($page * $preferences['entries']) . "," . $preferences['entries'];
 $res = $dbb->query($query);
-$nbRows = $dbb->numberRows();
+$nbRows = $res->rowCount();
 $data = array();
 $outputLength = $preferences['output_length'] ? $preferences['output_length'] : 50;
 
@@ -276,8 +283,8 @@ while ($row = $res->fetchRow()) {
                 $data[$row['log_id']]['color'] = $stateHColors[$value];
                 $value = $stateHLabels[$value];
             } else {
-	            $data[$row['log_id']]['color'] = $stateINColors[$value];
-		        $value = "Info";
+                $data[$row['log_id']]['color'] = $stateINColors[$value];
+                $value = "Info";
             }
         } elseif ($key == "output") {
             $value = substr($value, 0, $outputLength);
