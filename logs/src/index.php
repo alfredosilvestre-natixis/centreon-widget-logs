@@ -42,8 +42,6 @@ require_once $centreon_path . 'www/class/centreonWidget.class.php';
 require_once $centreon_path . 'www/class/centreonUtils.class.php';
 require_once $centreon_path . 'www/class/centreonACL.class.php';
 
-require_once $centreon_path . "GPL_LIB/Smarty/libs/Smarty.class.php";
-
 session_start();
 
 if (!isset($_SESSION['centreon']) || !isset($_REQUEST['widgetId']) || !isset($_REQUEST['page'])) {
@@ -198,7 +196,7 @@ $msg_req .= " AND host_name NOT LIKE '%_Module_%'";
 
 // Search on object name
 if (isset($preferences['object_name_search']) && $preferences['object_name_search'] != "") {
-    $tab = split(" ", $preferences['object_name_search']);
+    $tab = explode(" ", $preferences['object_name_search']);
     $op = $tab[0];
     if (isset($tab[1])) {
         $search = $tab[1];
@@ -212,7 +210,7 @@ if (isset($preferences['object_name_search']) && $preferences['object_name_searc
 
 // Search on output
 if (isset($preferences['output_search']) && $preferences['output_search'] != "") {
-    $tab = split(" ", $preferences['output_search']);
+    $tab = explode(" ", $preferences['output_search']);
     $op = $tab[0];
     if (isset($tab[1])) {
         $outputSearch = $tab[1];

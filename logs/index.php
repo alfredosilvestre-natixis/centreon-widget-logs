@@ -43,9 +43,6 @@ require_once $centreon_path . 'www/class/centreonUtils.class.php';
 require_once $centreon_path . 'www/class/centreonACL.class.php';
 require_once $centreon_path . 'www/class/centreonHost.class.php';
 
-/* load smarty */
-require_once $centreon_path . 'GPL_LIB/Smarty/libs/Smarty.class.php';
-
 session_start();
 if (!isset($_SESSION['centreon']) || !isset($_REQUEST['widgetId'])) {
     exit;
