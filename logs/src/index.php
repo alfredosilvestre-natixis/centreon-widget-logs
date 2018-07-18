@@ -48,7 +48,6 @@ if (!isset($_SESSION['centreon']) || !isset($_REQUEST['widgetId']) || !isset($_R
     exit;
 }
 
-
 $centreon = $_SESSION['centreon'];
 
 $db = $dependencyInjector['configuration_db'];
@@ -61,7 +60,6 @@ $path = $centreon_path . "www/widgets/logs/src/";
 $template = new Smarty();
 $template = initSmartyTplForPopup($path, $template, "./", $centreon_path);
 
-$centreon = $_SESSION['centreon'];
 $widgetId = $_REQUEST['widgetId'];
 $page = $_REQUEST['page'];
 
@@ -228,7 +226,25 @@ if (isset($preferences['order_by']) && $preferences['order_by'] != "") {
 
 $start = time() - $preferences['log_period'];
 $end = time();
-$query = "SELECT SQL_CALC_FOUND_ROWS * FROM logs WHERE ctime > '$start' AND ctime <= '$end' $msg_req";
+$query = "SELECT SQL_CALC_FOUND_ROWS logs.* FROM logs";
+
+// Add centreon_acl table for filtering non-admin user
+if (!$centreon->user->admin) {
+	$query .= ", centreon_acl acl";
+}
+
+$query .= " WHERE ctime > '$start' AND ctime <= '$end' $msg_req";
+
+// Filter for non-admin user according to the group list defined in the ACL
+if (!$centreon->user->admin) {
+  $aclObj = new CentreonACL($centreon->user->get_id(), $centreon->user->get_admin());
+  $grouplistStr = $aclObj->getAccessGroupsString();
+
+	$query .= " AND logs.host_id = acl.host_id
+				AND (logs.service_id = acl.service_id OR (logs.service_id is null AND acl.service_id is null))
+				AND acl.group_id IN (" . (isset($grouplistStr) && $grouplistStr != "" ? $grouplistStr : 0) . ")";
+}
+
 $query .= " ORDER BY ctime DESC, host_name ASC, log_id DESC, service_description ASC";
 $query .= " LIMIT " . ($page * $preferences['entries']) . "," . $preferences['entries'];
 $res = $dbb->query($query);
@@ -236,28 +252,7 @@ $nbRows = $res->rowCount();
 $data = array();
 $outputLength = $preferences['output_length'] ? $preferences['output_length'] : 50;
 
-if (!$centreon->user->admin) {
-    $pearDB = $db;
-    $aclObj = new CentreonACL($centreon->user->get_id(), $centreon->user->get_admin());
-    $lca = array("LcaHost" => $aclObj->getHostServices($dbb, null, 1));
-}
-
 while ($row = $res->fetchRow()) {
-    if (!$centreon->user->admin) {
-        $continue = true;
-        if (isset($row['host_id']) && isset($lca['LcaHost'][$row['host_id']])) {
-            $continue = false;
-        } elseif (isset($row['host_id']) && isset($row['service_description'])) {
-            foreach ($lca['LcaHost'][$row['host_id']] as $key => $value) {
-                if ($value == $row['service_description']) {
-                    $continue = false;
-                }
-            }
-        }
-        if ($continue == true) {
-            continue;
-        }
-    }
     if (isset($row['host_name']) && $row['host_name'] != "") {
         $data[$row['log_id']]['object_name1'] = $row['host_name'];
     } elseif (isset($row['instance_name']) && $row['instance_name'] != "") {
